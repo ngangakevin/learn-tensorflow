@@ -122,7 +122,7 @@ The model is trained using a dataset of images with corresponding labels. The tr
 
 - **Model Architecture Setup**: The architecture includes convolutional layers to extract features, followed by pooling layers to reduce dimensionality.
 
-- **Training**: The model is trained using a loss function and an optimizer. The process is repeated for several epochs until the model\u2019s performance becomes satisfactory.
+- **Training**: The model is trained using a loss function and an optimizer. The process is repeated for several epochs until the model's performance becomes satisfactory.
 
 - **Evaluation**: Once trained, the model is evaluated on a test dataset to check its accuracy and performance metrics.
 
