@@ -71,11 +71,11 @@ model = keras.models.load_model('final_model.keras')
 **final_model.keras**: Keras format model for easy loading in TensorFlow
 **model.safetensors**: SafeTensors format for interoperability
 
-###Rust Ensemble Module
+### Rust Ensemble Module
 
 High-performance inference and model ensembling using Rust for better performance and memory efficiency.
 
-### Usage Examples
+## Usage Examples
 
 Loading and using the trained model:
 ```python
