@@ -196,11 +196,20 @@ Improve memory management
 Getting Started with Contributions
 
 #### Fork the repository
-Create a feature branch: git checkout -b feature/your-module-enhancement
+Create a feature branch: 
+```git
+git checkout -b feature/your-module-enhancement
+```
 Make your changes and test thoroughly
 Document your changes with comments and update relevant sections
-Commit with clear messages: git commit -m "Add [module] improvement: description"
-Push to your fork: git push origin feature/your-module-enhancement
+Commit with clear messages: 
+```git
+git commit -m "Add [module] improvement: description"
+```
+Push to your fork: 
+```git
+git push origin feature/your-module-enhancement
+```
 Open a Pull Request with a detailed description of your changes
 
 ### Guidelines
