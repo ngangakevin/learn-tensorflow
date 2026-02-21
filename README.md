@@ -116,20 +116,15 @@ sequenceDiagram
     BL->>O: Final Class + Uncertainty Score
 ```
 ### How It Works
-**Input Processing**:
-  - MNIST images are sent to all three models simultaneously.
-Model Inference:
-**BNN**:
-  - Uses Monte Carlo Dropout to generate a predictive distribution with mean and variance
-**Model 2 (CNN)**:
-  - Produces point estimates with softmax confidence
-**Model 3 (SVM)**:
-  - Provides point estimates with confidence scores
-**Bayesian Aggregation**:
-  - Computes posterior weights P(Model | Data) for each model
-  - Combines predictions using Bayesian Model Averaging
-**Final Output**:
-  - Returns both the predicted class and an uncertainty score
+
+The model is trained using a dataset of images with corresponding labels. The training process involves several steps:
+- **Data Preprocessing**: This step includes resizing images, normalizing pixel values, and augmenting the dataset to increase its variability.
+
+- **Model Architecture Setup**: The architecture includes convolutional layers to extract features, followed by pooling layers to reduce dimensionality.
+
+- **Training**: The model is trained using a loss function and an optimizer. The process is repeated for several epochs until the model\u2019s performance becomes satisfactory.
+
+- **Evaluation**: Once trained, the model is evaluated on a test dataset to check its accuracy and performance metrics.
 
 
 ### Development Workflow
