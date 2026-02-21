@@ -12,12 +12,12 @@
 
 ## Key Dependencies
 
-## Core ML Libraries
+### Core ML Libraries
 - **TensorFlow 2.20.0**: Deep learning framework
 - **Keras 3.13.2**: High-level neural networks API
 - **TensorFlow Probability 0.25.0**: Probabilistic modeling
 
-## Supporting Libraries
+### Supporting Libraries
 - **NumPy 2.4.1**: Numerical computing
 - **Pandas 3.0.0**: Data manipulation
 - **Scikit-learn 1.8.0**: Machine learning utilities
@@ -58,7 +58,7 @@ jupyter lab
 import keras
 model = keras.models.load_model('final_model.keras')
 ```
-### Project Components
+## Project Components
 
 ### Bayesian Neural Networks (bnn.ipynb)
 
@@ -68,9 +68,10 @@ model = keras.models.load_model('final_model.keras')
 - Model visualization and analysis
 - Trained Models
 
-final_model.keras: Keras format model for easy loading in TensorFlow
-model.safetensors: SafeTensors format for interoperability
-Rust Ensemble Module
+**final_model.keras**: Keras format model for easy loading in TensorFlow
+**model.safetensors**: SafeTensors format for interoperability
+
+###Rust Ensemble Module
 
 High-performance inference and model ensembling using Rust for better performance and memory efficiency.
 
@@ -87,15 +88,15 @@ model = keras.models.load_model('final_model.keras')
 # Make predictions
 predictions = model.predict(your_data)
 ```
-### Architecture: Bayesian Model Aggregation
+## Architecture: Bayesian Model Aggregation
 
 The project implements a sophisticated ensemble approach that combines multiple models through Bayesian Model Averaging (BMA):
 ```Mermaid
 sequenceDiagram
     participant U as Input Image (MNIST)
     participant BNN as Pre-trained BNN
-    participant M2 as Model 2 (e.g. CNN)
-    participant M3 as Model 3 (e.g. SVM)
+    participant M2 as Model 2 (CNN)
+    participant M3 as Model 3 (SVM)
     participant BL as Bayesian Aggregator
     participant O as Final Prediction
 
@@ -146,8 +147,8 @@ Contributors can work on different modules of our ensemble architecture:
 sequenceDiagram
     participant U as Input Image (MNIST)
     participant BNN as Pre-trained BNN
-    participant M2 as Model 2 (e.g. CNN)
-    participant M3 as Model 3 (e.g. SVM)
+    participant M2 as Model 2 (CNN)
+    participant M3 as Model 3 (SVM)
     participant BL as Bayesian Aggregator
     participant O as Final Prediction
 
