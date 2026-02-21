@@ -27,7 +27,7 @@
 ## Getting Started
 
 ### Prerequisites
-- Python 3.8+
+- Python 3.13+ *newer versions have breaking changes to tensorflow, so keep that in mind
 - Rust (for rust_ensemble features)
 
 ### Installation
