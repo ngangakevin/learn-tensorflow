@@ -142,52 +142,27 @@ Contributions are welcome! Please feel free to submit issues or pull requests.
 #### Contribution Areas
 
 Contributors can work on different modules of our ensemble architecture:
-```mermaid
-sequenceDiagram
-    participant U as Input Image (MNIST)
-    participant BNN as Pre-trained BNN
-    participant M2 as Model 2 (CNN)
-    participant M3 as Model 3 (SVM)
-    participant BL as Bayesian Aggregator
-    participant O as Final Prediction
 
-    U->>BNN: Send Image
-    U->>M2: Send Image
-    U->>M3: Send Image
-    
-    BNN->>BNN: Monte Carlo Dropout / Sampling
-    BNN->>BL: Predictive Distribution (Mean + Var)
-    
-    M2->>BL: Point Estimate / Softmax
-    M3->>BL: Point Estimate / Softmax
-    
-    Note over BL: Compute Posterior Weights<br/>P(Model | Data)
-    
-    BL->>BL: Weighted Combination (BMA)
-    BL->>O: Final Class + Uncertainty Score
-```
 ### How to Contribute
-
-1. Bayesian Neural Network Module (Python)
-
+1. **Bayesian Neural Network Module (Python)**
 Enhance the BNN architecture in bnn.ipynb
 Implement advanced uncertainty quantification techniques
 Optimize Monte Carlo Dropout sampling
 Add regularization improvements
-2. Additional Model Integration (Python)
 
+2. **Additional Model Integration (Python)**
 Implement Model 2 (e.g., CNN improvements)
 Develop Model 3 (e.g., alternative classifiers)
 Add support for new model architectures
 Optimize model training pipelines
-3. Bayesian Aggregation Module (Python/Rust)
 
+3. **Bayesian Aggregation Module (Python/Rust)**
 Improve posterior weight computation
 Implement advanced Bayesian Model Averaging techniques
 Optimize the weighted combination algorithm
 Add uncertainty calibration methods
-4. Rust Ensemble Module (Rust)
 
+4. **Rust Ensemble Module (Rust)**
 Optimize inference performance in rust_ensemble/
 Implement efficient model serialization
 Add GPU support for faster predictions
