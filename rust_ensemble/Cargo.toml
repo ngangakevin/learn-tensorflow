@@ -1,0 +1,12 @@
+[package]
+name = "rust_ensemble"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+burn = { version ="0.20.1", features = ["ndarray"] }
+ferris-says = "0.3.2"
+memmap2 = "0.9.10"
+safetensors = "0.7.0"
+burn-ndarray = "0.20.1"
+bytemuck = "1.25.0"
