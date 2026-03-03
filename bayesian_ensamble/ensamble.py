@@ -27,14 +27,13 @@ def plt_calibration_curve(y_true, y_probs, bins=10):
 
     correct = (predictions == y_true)
 
-    prob_true, prob_pred = calibration_curve(correct, confidences, n_bins=bins)
+    prob_true, prob_pred = calibration_curve(correct, confidences, n_bins=10, strategy='quantile')
 
-    plt.figure(figsize=(8, 6))
-    plt.plot([0,1], [0,1], "--", color="gray", label="Perfect Calibration")
-    plt.plot(prob_pred, prob_true, marker=".", label="Ensambe Calibration")
-    plt.ylabel("Actual Accuracy")
-    plt.xlabel("Ensamble Confidence Score")
-    plt.title("Reliability Diagram")
+    plt.plot(prob_pred, prob_true, marker='o', label='Ensemble (Quantile)')
+    plt.plot([0, 1], [0, 1], linestyle='--', color='gray', label='Perfectly Calibrated')
+    plt.xlabel('Mean Predicted Confidence')
+    plt.ylabel('Actual Accuracy')
+    plt.title('Reliability Diagram (Quantile Binning)')
     plt.legend()
     plt.grid(True)
     plt.show()
@@ -56,52 +55,87 @@ def confidence_prediction(x_input, models, threshold=0.98):
             print(f"Sample {i}: REJECT - Escalate to backup system (Confidence: {confidence_score:.4f}) | Disagreement (Var): {var[i]:.6f}")
             results.append(None)
     return results
+
 def get_standardized_preds(model, x, bnn_samples=10):
-    x_4d = x.to_numpy().reshape(-1, 28,28,1) if x.ndim != 4 else x
-    x_2d = x.to_numpy().reshape(x.shape[0], -1)
-
-    if hasattr(model, "layers"):
-        if any("flipout" in layer.name.lower() for layer in model.layers):
-            bnn_runs = np.array([model.predict(x_4d, verbose=0) for _ in range(bnn_samples)])
-            return bnn_runs
-        else:
-            return model.predict(x_4d, verbose=0)
-    elif "sklearn" in str(type(model)).lower():
-        if hasattr(model, "predict_proba"):
-            return model.predict_proba(x_2d)
-        else:
-            preds = model.predict(x_2d)
-            one_hot = np.zeros((len(preds), 10))
-            for i, p in enumerate(preds):
-                one_hot[i, int(p)] = 1.0
-            return one_hot
+    is_conv_model = any("conv" in str(layer).lower() for layer in getattr(model, 'layers', []))
+    x_input = x
+    if is_conv_model and x.ndim == 2:
+        x_input = x.reshape(-1, 28, 28, 1)
+    if hasattr(model, "predict_proba"):
+        print(type(model))
+        return model.predict_proba(x)
+    elif hasattr(model, "predict"):
+        return model.predict(x_input, verbose=0)
+    elif hasattr(model, "sample_predict"):
+        return model.sample_predict(x, n_samples=50)
     else:
-        print(f"DEBUG: Model Type is {type(model)}")
-        raise ValueError(f"Could not route model of type: {type(model)}")  
+        raise TypeError(f"Model type {type(model)} not recognized by standardized wrapper.")
     
-    # if hasattr(model, "predict_proba"):
-    #     x_flat = x.to_numpy().reshape(x.shape[0], -1)
-    #     return model.predict_proba(x_flat)
-    # elif (hasattr(model, "layers") and any("flipout" in layer.name.lower() for layer in model.layers)):
-    #     bnn_runs = np.array([model.predict(x_4d, verbose=0) for _ in range(bnn_samples)])
-    #     return bnn_runs
-    # else:
-    #     return model.predict(x_4d)
-
 def bayesian_ensamble_predict(models, x_test):
     all_preds = []
-    for m in models:
+    all_variances = []
+    for i, m in enumerate(models):
         preds = get_standardized_preds(m, x_test)
+        print(f"Model {m} output shape: {preds.shape}")
         if preds.ndim ==3:
-            preds = np.mean(preds, axis=0)
-        if preds.ndim ==1:
-            preds = preds.reshape(1, -1)
+            model_var = np.var(preds, axis=0).mean(axis=1)
+            model_mean = np.mean(preds, axis=0)
+        else:
+            entropy = -np.sum(preds * np.log(preds + 1e-10), axis=1)
+            model_var = entropy
+            model_mean = preds
+        all_preds.append(model_mean)
+        all_variances.append(model_var)
+    
+    weighted_mean_probs = dynamc_weighted_ensamble(all_preds, all_variances)
 
-        all_preds.append(preds)
 
     ensamble_stack = np.stack(all_preds, axis=0)
-    mean_probabilities = np.mean(ensamble_stack, axis = 0)
     variance_prediction = np.var(ensamble_stack, axis = 0).mean(axis=1)
-    confidence = np.max(mean_probabilities, axis=1)
+    confidence = np.max(weighted_mean_probs, axis=1)
 
-    return mean_probabilities, confidence, variance_prediction
+    return weighted_mean_probs, confidence, variance_prediction
+
+def dynamic_threshold(probs, y_val, conf):
+    thresholds = [0.85, 0.88, 0.90, 0.92, 0.95]
+    best_threshold = 0.90
+    best_accuracy = 0.0
+    results_dict = {}
+    total_samples = len(y_val)
+
+    for t in thresholds:
+        accepted_indices = np.where(conf > t)[0]
+        if len(accepted_indices) > 0:
+            predicted_classes = np.argmax(probs[accepted_indices], axis=1)
+            true_labels = y_val[accepted_indices]
+
+            accuracy = np.mean(predicted_classes == true_labels)
+            rejection_rate = (1-(len(accepted_indices)/total_samples)) * 100
+
+            print(f"Threshold {t}: Accuracy {accuracy:.2%}, Rejection Rate {rejection_rate:.2f}%")
+            results_dict[t] = {"accuracy": accuracy, "rejection_rate": rejection_rate}
+
+            if accuracy >= best_accuracy:
+                best_accuracy = accuracy
+                best_threshold = t
+        else:
+            print(f"Threshold {t}: No samples accepted.")
+    print("-" * 30)
+    print(f"Best Threshold: {best_threshold} with Accuracy: {best_accuracy:.2%}")
+    
+    return best_threshold, best_accuracy, results_dict
+
+def dynamc_weighted_ensamble(all_preds, variance_per_model):
+    """
+    all_preds: list of arrays
+    variance_per_model: list of variances
+    """
+    # Add small epsilon to avoid division by 0
+    precisions = [1.0/(v+1e-6) for v in variance_per_model]
+
+    total_precision = sum(precisions)
+    dynamic_weights = [p / total_precision for p in precisions]
+
+    weighted_mean = sum(p* w[:, np.newaxis] for p, w in zip(all_preds, dynamic_weights))
+
+    return weighted_mean
